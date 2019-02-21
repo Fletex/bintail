@@ -1,16 +1,19 @@
-project(libbintail VERSION 0.1)
+project(libbintail LANGUAGES CXX VERSION 0.1)
 
-add_library(libbintail
+set(SOURCES
     bintail.cpp
     mvscn.cpp
-    mvelem.cpp
-)
+    mvelem.cpp)
+
+add_library(libbintail ${SOURCES})
+
+add_executable(tests ${SOURCES}
+    test_main.cpp)
 
 target_include_directories(libbintail PUBLIC
     include
     PRIVATE
     ${ELF_INCLUDE_DIRS} ${MULTIVERSE_INCLUDE_DIRS})
-#remove elf because link?
 
 set_target_properties(libbintail PROPERTIES
     CXX_STANDARD 17
@@ -19,16 +22,15 @@ set_target_properties(libbintail PROPERTIES
 
 target_link_libraries(libbintail ${ELF_LIBRARIES})
 
-add_executable(testlib
-    testlib.cpp)
-
-set_target_properties(testlib PROPERTIES
+set_target_properties(tests PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED YES
 )
 
-target_link_libraries(testlib
-    libbintail)
+target_link_libraries(tests
+    Catch2::Catch2
+    libbintail
+)
 
 install(TARGETS libbintail DESTINATION lib)
 
@@ -45,3 +47,8 @@ target_link_libraries(bintail-cli
     libbintail)
 
 install(TARGETS bintail-cli DESTINATION bin)
+
+include(CTest)
+include(Catch)
+catch_discover_tests(tests)
+

@@ -5,6 +5,7 @@ set(default_build_type "Debug")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(PkgConfig REQUIRED)
+find_package(Catch2 REQUIRED)
 pkg_search_module(ELF REQUIRED libelf)
 pkg_search_module(MULTIVERSE REQUIRED libmultiverse)
 

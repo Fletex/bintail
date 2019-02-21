@@ -5,7 +5,8 @@
 #include <vector>
 #include <memory>
 #include <cstddef>
-#include <bintail/bintail.h>
+
+#include <bintail/bintail.hpp>
 
 class MVFn;
 class MVVar;

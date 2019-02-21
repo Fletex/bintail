@@ -12,8 +12,8 @@
 #include <gelf.h>
 #include <regex>
 
-#include <bintail/bintail.h>
-#include "mvelem.h"
+#include <bintail/bintail.hpp>
+#include "mvelem.hpp"
 
 using namespace std;
 

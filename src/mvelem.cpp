@@ -8,8 +8,8 @@
 using namespace std;
 
 #include "string.h"
-#include "mvelem.h"
-#include <bintail/bintail.h>
+#include "mvelem.hpp"
+#include <bintail/bintail.hpp>
 
 //------------------MVText-----------------------------------
 MVText::MVText(std::byte *buf, size_t size, uint64_t vaddr) {
