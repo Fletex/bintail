@@ -44,6 +44,8 @@ Bintail::~Bintail() {
 }
 
 Bintail::Bintail(const char *infile) {
+    bintail::ElfExe exe{infile};
+
     /* init libelf state */ 
     if (elf_version(EV_CURRENT) == EV_NONE)
         errx(1, "libelf init failed");

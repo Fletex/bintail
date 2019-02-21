@@ -2,13 +2,16 @@ project(libbintail LANGUAGES CXX VERSION 0.1)
 
 set(SOURCES
     bintail.cpp
+    elf.cpp
     mvscn.cpp
-    mvelem.cpp)
+    mvelem.cpp
+    include/bintail/bintail.hpp)
 
 add_library(libbintail ${SOURCES})
 
 add_executable(tests ${SOURCES}
-    test_main.cpp)
+    test_main.cpp
+    test_bintail.cpp)
 
 target_include_directories(libbintail PUBLIC
     include

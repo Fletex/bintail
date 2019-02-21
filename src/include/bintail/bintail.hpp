@@ -182,6 +182,25 @@ private:
     BssSection *bss;
 };
 
+namespace bintail
+{
+    class ElfExe {
+        int fd;
+        Elf *e;
+        GElf_Ehdr ehdr;
+
+    public:
+        ElfExe(const char *infile);
+        ~ElfExe();
+
+        bool is_elf();
+        bool is_pic();
+
+        int shnum();
+        int shstrndx();
+    };
+}
+
 class Bintail {
 public:
     Bintail(const char *infile);
