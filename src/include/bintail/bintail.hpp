@@ -1,14 +1,14 @@
 #ifndef __BINTAIL_H
 #define __BINTAIL_H
 
-#include <vector>
-#include <set>
+#include <gelf.h>
+#include <cstddef>
+#include <map>
 #include <memory>
 #include <optional>
-#include <map>
+#include <set>
 #include <string>
-#include <cstddef>
-#include <gelf.h>
+#include <vector>
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -181,25 +181,6 @@ private:
     MVCsSection *mvcs;
     BssSection *bss;
 };
-
-namespace bintail
-{
-    class ElfExe {
-        int fd;
-        Elf *e;
-        GElf_Ehdr ehdr;
-
-    public:
-        ElfExe(const char *infile);
-        ~ElfExe();
-
-        bool is_elf();
-        bool is_pic();
-
-        int shnum();
-        int shstrndx();
-    };
-}
 
 class Bintail {
 public:

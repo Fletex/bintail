@@ -1,19 +1,17 @@
-#include <iostream>
-#include <string>
-#include <set>
-#include <iomanip>
-#include <memory>
-#include <err.h>
-#include <stdio.h>
-#include <cstdlib>
-#include <unistd.h>
+#include <bintail/bintail.hpp>
+
 #include <assert.h>
+#include <err.h>
 #include <fcntl.h>
-#include <gelf.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <cstdlib>
+#include <iomanip>
+#include <iostream>
 #include <regex>
 
-#include <bintail/bintail.hpp>
 #include "mvelem.hpp"
+#include "elf.h"
 
 using namespace std;
 
@@ -70,7 +68,6 @@ Bintail::Bintail(const char *infile) {
         s.name = elf_strptr(e_in, shstrndx, shdr.sh_name);
         secs.push_back(s);
     }
-
 
     symtab_scn = get_scn(secs, ".symtab").value();
     if (symtab_scn == nullptr)

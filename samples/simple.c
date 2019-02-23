@@ -9,9 +9,9 @@
 #include "multiverse.h"
 #endif
 
-__attribute__((multiverse)) int config;
+__attribute__((multiverse)) int config; // NOLINT
 
-void __attribute__((multiverse)) func() {
+void __attribute__((multiverse)) func() { // NOLINT
     if (config)
         puts("true");
     else

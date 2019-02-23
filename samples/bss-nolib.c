@@ -11,11 +11,11 @@
 
 typedef enum {false, true} bool;
 
-__attribute__((multiverse)) bool config_first = false;
-__attribute__((multiverse)) bool config_second = true;
-__attribute__((multiverse)) bool config_third = false;
+__attribute__((multiverse)) bool config_first = false; // NOLINT
+__attribute__((multiverse)) bool config_second = true; // NOLINT
+__attribute__((multiverse)) bool config_third = false; // NOLINT
 
-void __attribute__((multiverse)) func_first()
+void __attribute__((multiverse)) func_first() // NOLINT
 {
     if (config_first)
         puts("config_first = true");
@@ -23,7 +23,7 @@ void __attribute__((multiverse)) func_first()
         puts("config_first = false");
 }
 
-void __attribute__((multiverse)) func_second()
+void __attribute__((multiverse)) func_second() // NOLINT
 {
     if (config_second)
         puts("config_second = true");
@@ -31,7 +31,7 @@ void __attribute__((multiverse)) func_second()
         puts("config_second = false");
 }
 
-void __attribute__((multiverse)) func_third()
+void __attribute__((multiverse)) func_third() // NOLINT
 {
     if (config_third)
         puts("config_third = true");

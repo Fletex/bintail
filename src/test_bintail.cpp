@@ -19,11 +19,3 @@ TEST_CASE("Bintail can read and write an executable") {
     f.open(outfile);
     REQUIRE(f.good());
 }
-
-TEST_CASE("EHDR parsed and valid") {
-    bintail::ElfExe exe{sample_simple};
-
-    REQUIRE( exe.is_elf() );
-    REQUIRE( exe.is_pic() );
-    REQUIRE( exe.shnum() > exe.shstrndx() );
-}
