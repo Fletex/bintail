@@ -62,7 +62,7 @@ size_t Section::write_new_scn(Elf *elf) const {
 uint64_t Section::get_vaddr() const { return shdr_.sh_addr; }
 uint64_t Section::get_offset() const { return shdr_.sh_offset; }
 
-const std::vector<uint8_t> Section::get_data() { return buf_; }
+const std::vector<uint8_t> Section::get_data() const { return buf_; }
 
 ElfExe::ElfExe(const char *infile) {
   /* init libelf state */

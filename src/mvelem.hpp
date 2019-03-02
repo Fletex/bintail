@@ -14,18 +14,20 @@ class MVPP;
 
 class MVData {
 public:
-    virtual size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr) = 0;
-    virtual ~MVData() {}
+ virtual size_t make_info(bool fpic, uint8_t* buf, Section* scn,
+                          uint64_t vaddr) = 0;
+ virtual ~MVData() {}
 };
 
 //-----------------------------------------------------------------------------
 class MVText : public MVData {
 public:
-    MVText(std::byte* buf, size_t size, uint64_t vaddr);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+ MVText(uint8_t* buf, size_t size, uint64_t vaddr);
+ size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
+
 private:
     long orig_vaddr;
-    std::vector<std::byte> instr;
+    std::vector<uint8_t> instr;
 };
 
 //-----------------------------------------------------------------------------
@@ -38,7 +40,7 @@ struct mv_info_assignment {
 class MVassign : public MVData {
 public:
     MVassign(struct mv_info_assignment& _assign);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+    size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
     bool is_active();
     bool check_sym(const std::string &sym_match);
     void link_var(MVVar* _var);
@@ -67,8 +69,8 @@ struct mv_info_mvfn {
 class MVmvfn : public MVData {
 public:
     MVmvfn(struct mv_info_mvfn& _mvfn, MVDataSection* data, Section* text);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
-    size_t make_info_ass(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+    size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
+    size_t make_info_ass(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
     void set_info_assigns(uint64_t vaddr);
     void check_var(MVVar* var, MVFn* fn);
     void probe_sym(struct symbol &sym, const std::string &sym_match);
@@ -105,13 +107,14 @@ struct mv_info_fn {
 class MVFn : public MVData {
 public:
     MVFn(struct mv_info_fn& _fn, MVDataSection* data, Section* text, Section* rodata);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+    size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
     void print();
     void probe_var(MVVar* var);
     void probe_sym(struct symbol &sym);
     void add_pp(MVPP* pp);
     void apply(Section* text, bool guard);
-    size_t make_mvdata(bool fpic, std::byte* buf, MVDataSection* mvdata, uint64_t vaddr);
+    size_t make_mvdata(bool fpic, uint8_t* buf, MVDataSection* mvdata,
+                       uint64_t vaddr);
     void set_mvfn_vaddr(uint64_t vaddr);
 
     constexpr bool is_fixed() { return frozen; }
@@ -157,7 +160,7 @@ struct mv_info_var {
 class MVVar : public MVData {
 public:
     MVVar(struct mv_info_var _var, Section* rodata, Section* data);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+    size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
     void print();
     void link_fn(MVFn* fn);
     void set_value(int v, Section* data);
@@ -203,7 +206,7 @@ public:
     MVPP(struct mv_info_callsite& cs, Section* text);
     void print();
     void set_fn(MVFn* fn);
-    size_t make_info(bool fpic, std::byte* buf, Section* scn, uint64_t vaddr);
+    size_t make_info(bool fpic, uint8_t* buf, Section* scn, uint64_t vaddr);
     uint64_t decode_callsite(struct mv_info_callsite& cs, Section* text); // ret callee
     void patchpoint_apply(struct mv_info_mvfn *mvfn, Section* text);
     void patchpoint_size(void **from, void** to);

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <iomanip>
-#include <optional>
 #include <algorithm>
 #include <array>
 #include <exception>
@@ -108,8 +107,7 @@ std::unique_ptr<std::vector<struct mv_info_fn>> MVFnSection::read() {
     GElf_Shdr shdr;
     gelf_getshdr(scn_in, &shdr);
 
-    // ToDo(Felix): stupid casting???
-    const std::byte* buf = static_cast<std::byte*>(d->d_buf);
+    auto buf = static_cast<const uint8_t *>(d->d_buf);
     for (auto i = 0; i * sizeof(struct mv_info_fn) < shdr.sh_size; i++) {
         auto e = *((struct mv_info_fn*)buf + i);
         v->push_back(e);
@@ -124,7 +122,7 @@ uint64_t MVFnSection::generate(bool fpic, uint64_t offset, uint64_t vaddr, Secti
     if (scn_out != nullptr) {
         /* data */
         auto data = elf_getdata(scn_out, nullptr);
-        auto buf = static_cast<byte*>(data->d_buf);
+        auto buf = static_cast<uint8_t *>(data->d_buf);
 
         for (auto& e:*fns) {
             if (e->is_fixed())
@@ -173,7 +171,7 @@ std::unique_ptr<std::vector<struct mv_info_var>> MVVarSection::read() {
     gelf_getshdr(scn_in, &shdr);
 
     // ToDo(Felix): stupid casting???
-    const std::byte* buf = static_cast<std::byte*>(d->d_buf);
+    auto buf = static_cast<const uint8_t *>(d->d_buf);
     for (auto i = 0; i * sizeof(struct mv_info_var) < shdr.sh_size; i++) {
         auto e = *((struct mv_info_var*)buf + i);
         v->push_back(e);
@@ -188,7 +186,7 @@ uint64_t MVVarSection::generate(bool fpic, uint64_t offset, uint64_t vaddr, Sect
     if (scn_out != nullptr) { // no data -> section not needed
         /* data */
         auto data = elf_getdata(scn_out, nullptr);
-        auto buf = static_cast<byte*>(data->d_buf);
+        auto buf = static_cast<uint8_t *>(data->d_buf);
 
         for (auto& e:*vars) {
             if (e->frozen)
@@ -235,8 +233,7 @@ std::unique_ptr<std::vector<struct mv_info_callsite>> MVCsSection::read() {
     GElf_Shdr shdr;
     gelf_getshdr(scn_in, &shdr);
 
-    // ToDo(Felix): stupid casting???
-    const std::byte* buf = static_cast<std::byte*>(d->d_buf);
+    auto buf = static_cast<const uint8_t *>(d->d_buf);
     for (auto i = 0; i * sizeof(struct mv_info_callsite) < shdr.sh_size; i++) {
         auto e = *((struct mv_info_callsite*)buf + i);
         v->push_back(e);
@@ -250,7 +247,7 @@ uint64_t MVCsSection::generate(bool fpic, uint64_t offset, uint64_t vaddr, Secti
     if (scn_out != nullptr) { // no data -> section not needed
         /* data */
         auto data = elf_getdata(scn_out, nullptr);
-        auto buf = static_cast<byte*>(data->d_buf);
+        auto buf = static_cast<uint8_t *>(data->d_buf);
 
         for (auto& e:*pps) {
             if ( e->_fn->is_fixed() || e->pp.type == PP_TYPE_X86_JUMP)
@@ -294,7 +291,7 @@ uint64_t MVDataSection::generate(bool fpic, uint64_t offset, uint64_t vaddr) {
 
     /* data */
     auto data = elf_getdata(scn_out, nullptr);
-    auto buf = static_cast<byte*>(data->d_buf);
+    auto buf = static_cast<uint8_t *>(data->d_buf);
 
     auto ndx = 0;
     for (auto& e:*fns) {
@@ -381,13 +378,13 @@ void Dynamic::print() {
     }
 }
 
-std::optional<GElf_Dyn*> Dynamic::get_dyn(int64_t tag) {
-    auto it = find_if(dyns.begin(), dyns.end(), [&tag](auto& d) {
-            return d->d_tag == tag; });
-    if (it != dyns.end())
-        return (*it).get();
-    else
-        return {};
+GElf_Dyn *Dynamic::get_dyn(int64_t tag) {
+  auto it = find_if(dyns.begin(), dyns.end(),
+                    [&tag](auto &d) { return d->d_tag == tag; });
+  if (it != dyns.end())
+    return (*it).get();
+  else
+    return nullptr;
 }
 
 void Dynamic::write() {
@@ -418,29 +415,28 @@ void Section::add_rela(uint64_t source, uint64_t target) {
     relocs.push_back(rela);
 }
 
-const std::byte* Section::in_buf() {
-    auto d = elf_getdata(scn_in, nullptr);
-    return static_cast<byte*>(d->d_buf);
+const uint8_t *Section::in_buf() {
+  auto d = elf_getdata(scn_in, nullptr);
+  return static_cast<uint8_t *>(d->d_buf);
 }
 
-const std::byte* Section::in_buf(uint64_t addr) {
-    GElf_Shdr shdr;
-    gelf_getshdr(scn_in, &shdr);
-    return in_buf()+(addr-shdr.sh_addr);
+const uint8_t *Section::in_buf(uint64_t addr) {
+  GElf_Shdr shdr;
+  gelf_getshdr(scn_in, &shdr);
+  return in_buf() + (addr - shdr.sh_addr);
 }
 
-std::byte* Section::out_buf() {
-    if (scn_out == nullptr)
-        throw std::runtime_error("Section does not exsist");
-    auto d = elf_getdata(scn_out, nullptr);
-    elf_flagdata(d, ELF_C_SET, ELF_F_DIRTY);
-    return static_cast<byte*>(d->d_buf);
+uint8_t *Section::out_buf() {
+  if (scn_out == nullptr) throw std::runtime_error("Section does not exsist");
+  auto d = elf_getdata(scn_out, nullptr);
+  elf_flagdata(d, ELF_C_SET, ELF_F_DIRTY);
+  return static_cast<uint8_t *>(d->d_buf);
 }
 
-std::byte* Section::out_buf(uint64_t addr) {
-    GElf_Shdr shdr;
-    gelf_getshdr(scn_out, &shdr);
-    return out_buf()+(addr-shdr.sh_addr);
+uint8_t *Section::out_buf(uint64_t addr) {
+  GElf_Shdr shdr;
+  gelf_getshdr(scn_out, &shdr);
+  return out_buf() + (addr - shdr.sh_addr);
 }
 
 bool Section::probe_rela(GElf_Rela *rela) {
@@ -509,25 +505,25 @@ void Section::print(size_t row) {
     auto v = shdr.sh_addr;
     cout << " 0x" << hex << v << ": ";
     for (auto n = 0u; n < d->d_size; n++) {
-        if (auto r = get_rela(v+n); r.has_value())
-            cout << ANSI_COLOR_BLUE << "[0x" << r.value()->r_addend << "]";
-        else
-            cout << ANSI_COLOR_RESET;
-        printf("%02x ", *(p+n));
-        if (n%4 == 3)   printf(" ");
-        if (n%row == row-1) 
-            cout << "\n 0x" << hex << v+n+1 << ": ";
+      auto r = get_rela(v + n);
+      if (r != nullptr)
+        cout << ANSI_COLOR_BLUE << "[0x" << r->r_addend << "]";
+      else
+        cout << ANSI_COLOR_RESET;
+      printf("%02x ", *(p + n));
+      if (n % 4 == 3) printf(" ");
+      if (n % row == row - 1) cout << "\n 0x" << hex << v + n + 1 << ": ";
     }
     cout << "\n";
 }
 
-optional<GElf_Rela*> Section::get_rela(uint64_t vaddr) {
-    auto r = find_if(relocs.begin(), relocs.end(),
-                [vaddr](const GElf_Rela& r) { return r.r_offset == vaddr; }); 
-    if (r == relocs.end())
-        return {};
-    else
-        return r.base();
+GElf_Rela *Section::get_rela(uint64_t vaddr) {
+  auto r = find_if(relocs.begin(), relocs.end(),
+                   [vaddr](const GElf_Rela &r) { return r.r_offset == vaddr; });
+  if (r == relocs.end())
+    return nullptr;
+  else
+    return r.base();
 }
 
 string Section::get_string(uint64_t addr) {
@@ -559,10 +555,9 @@ bool Section::in_segment(const GElf_Phdr &phdr) {
     return (not_above && not_below) || last_nobits;
 }
 
-void Section::fill(uint64_t addr, byte value, size_t len) {
-    auto b = out_buf(addr);
-    for(auto i=0ul; i<len; i++)
-        b[i] = value;
+void Section::fill(uint64_t addr, uint8_t value, size_t len) {
+  auto b = out_buf(addr);
+  for (auto i = 0ul; i < len; i++) b[i] = value;
 }
 
 void Section::load(Elf_Scn* s) {

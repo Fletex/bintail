@@ -37,7 +37,7 @@ class Section {
    * Data changes are complex, relocations have to be taken into account
    * and different section types have differing constraints.
    **/
-  const std::vector<uint8_t> get_data();
+  const std::vector<uint8_t> get_data() const;
   const std::string get_name() { return name_; }
 
  private:

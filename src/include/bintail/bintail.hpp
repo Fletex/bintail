@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <map>
 #include <memory>
-#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -37,10 +36,10 @@ public:
 
     void load(Elf_Scn * s);
     std::string get_string(uint64_t addr);
-    void fill(uint64_t addr, std::byte value, size_t len);
+    void fill(uint64_t addr, uint8_t value, size_t len);
     void print(size_t elem_sz); // scn_in
     bool inside(uint64_t addr); // scn_in
-    std::optional<GElf_Rela*> get_rela(uint64_t vaddr);
+    GElf_Rela *get_rela(uint64_t vaddr);
     virtual bool probe_rela(GElf_Rela *rela);
     void add_rela(uint64_t source, uint64_t target);
     bool in_segment(const GElf_Phdr &phdr);
@@ -49,10 +48,10 @@ public:
 
     constexpr size_t size()  { return sz; }
     constexpr size_t max_sz()  { return max_size; }
-    std::byte* out_buf();
-    std::byte* out_buf(uint64_t addr);
-    const std::byte* in_buf();
-    const std::byte* in_buf(uint64_t addr);
+    uint8_t *out_buf();
+    uint8_t *out_buf(uint64_t addr);
+    const uint8_t *in_buf();
+    const uint8_t *in_buf(uint64_t addr);
     uint64_t read_ptr(uint64_t address);
     void write_ptr(bool fpic, uint64_t address, uint64_t destination);
 
@@ -129,8 +128,9 @@ public:
     void load(Elf_Scn *scn_in);
     void write();
     void print();
-    std::optional<GElf_Dyn*> get_dyn(int64_t tag);
-private:
+    GElf_Dyn *get_dyn(int64_t tag);
+
+   private:
     std::vector<std::unique_ptr<GElf_Dyn>> dyns;
 };
 

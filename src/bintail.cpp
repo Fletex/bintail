@@ -24,14 +24,13 @@ static uint64_t sym_value(vector<struct symbol> &syms, const char* name) {
     return it->sym.st_value;
 }
 
-static std::optional<Elf_Scn*> get_scn(vector<struct sec> &secs, const char* name) {
-    auto it = find_if(secs.cbegin(), secs.cend(), [name](auto& s) {
-            return s.name == name;
-            });
-    if (it == secs.cend())
-        return {};
-    else 
-        return it->scn;
+static Elf_Scn* get_scn(vector<struct sec>& secs, const char* name) {
+  auto it = find_if(secs.cbegin(), secs.cend(),
+                    [name](auto& s) { return s.name == name; });
+  if (it == secs.cend())
+    return nullptr;
+  else
+    return it->scn;
 }
 
 Bintail::~Bintail() {
@@ -68,54 +67,58 @@ Bintail::Bintail(const char *infile) {
     secs.push_back(s);
   }
 
-    symtab_scn = get_scn(secs, ".symtab").value();
-    if (symtab_scn == nullptr)
-        throw std::runtime_error("Need symtab for multiverse boundries.");
+  symtab_scn = get_scn(secs, ".symtab");
+  if (symtab_scn == nullptr)
+    throw std::runtime_error("Need symtab for multiverse boundries.");
 
-    /* Must exist */
-    reloc_scn_in = get_scn(secs, ".rela.dyn").value(); // also reachable over DYNAMIC section
+  /* Must exist */
+  reloc_scn_in =
+      get_scn(secs, ".rela.dyn");  // also reachable over DYNAMIC section
+  auto rodata_scn = get_scn(secs, ".rodata");
+  auto data_scn = get_scn(secs, ".data");
+  auto dynamic_scn = get_scn(secs, ".dynamic");
+  auto text_scn = get_scn(secs, ".text");
+  auto bss_scn = get_scn(secs, ".bss");
+  auto mvvar_scn = get_scn(secs, "__multiverse_var_");
 
-    Elf_Scn *rodata_scn = get_scn(secs, ".rodata").value();
-    rodata.load (rodata_scn);
-    scn_handler[rodata_scn] = &rodata;
+  if (reloc_scn_in == nullptr || rodata_scn == nullptr || data_scn == nullptr ||
+      dynamic_scn == nullptr || text_scn == nullptr || bss_scn == nullptr ||
+      mvvar_scn == nullptr || mvvar_scn == nullptr)
+    throw std::runtime_error("Executable does not have all needed sections.\n");
 
-    Elf_Scn *data_scn = get_scn(secs, ".data").value();
-    data.load(data_scn);
-    scn_handler[data_scn] = &data;
+  rodata.load(rodata_scn);
+  scn_handler[rodata_scn] = &rodata;
 
-    Elf_Scn *dynamic_scn = get_scn(secs, ".dynamic").value();
-    dynamic.load(dynamic_scn);
-    scn_handler[dynamic_scn] = &dynamic;
+  data.load(data_scn);
+  scn_handler[data_scn] = &data;
 
-    Elf_Scn *text_scn = get_scn(secs, ".text").value();
-    text.load(text_scn);
-    scn_handler[text_scn] = &text;
+  dynamic.load(dynamic_scn);
+  scn_handler[dynamic_scn] = &dynamic;
 
-    Elf_Scn *bss_scn = get_scn(secs, ".bss").value();
-    bss.load(bss_scn);
-    scn_handler[bss_scn] = &bss;
+  text.load(text_scn);
+  scn_handler[text_scn] = &text;
 
-    Elf_Scn *mvvar_scn = get_scn(secs, "__multiverse_var_").value();
-    if (mvvar_scn == nullptr) 
-        throw std::runtime_error("Executable has no multiverse variables.\n");
-    mvvar.load(mvvar_scn);
-    scn_handler[mvvar_scn] = &mvvar;
+  bss.load(bss_scn);
+  scn_handler[bss_scn] = &bss;
 
-    /* Sections may not exsist */
-    auto mvfn_scn = get_scn(secs, "__multiverse_fn_");
-    if (mvfn_scn.has_value()) {
-        mvfn.load(mvfn_scn.value());
-        scn_handler[mvfn_scn.value()] = &mvfn;
-    }
+  mvvar.load(mvvar_scn);
+  scn_handler[mvvar_scn] = &mvvar;
+
+  /* Sections may not exsist */
+  auto mvfn_scn = get_scn(secs, "__multiverse_fn_");
+  if (mvfn_scn != nullptr) {
+    mvfn.load(mvfn_scn);
+    scn_handler[mvfn_scn] = &mvfn;
+  }
     auto mvcs_scn = get_scn(secs, "__multiverse_callsite_");
-    if (mvcs_scn.has_value()) {
-        mvcs.load(mvcs_scn.value());
-        scn_handler[mvcs_scn.value()] = &mvcs;
+    if (mvcs_scn != nullptr) {
+      mvcs.load(mvcs_scn);
+      scn_handler[mvcs_scn] = &mvcs;
     }
     auto mvdata_scn = get_scn(secs, "__multiverse_data_");
-    if (mvdata_scn.has_value()) {
-        mvdata.load(mvdata_scn.value());
-        scn_handler[mvdata_scn.value()] = &mvdata;
+    if (mvdata_scn != nullptr) {
+      mvdata.load(mvdata_scn);
+      scn_handler[mvdata_scn] = &mvdata;
     }
 
     /* read info sections */
@@ -265,13 +268,14 @@ void Bintail::update_relocs_sym() {
     shdr.sh_size = i * sizeof(GElf_Rela);
     d->d_size = shdr.sh_size;
 
-    auto dyn_relasz = dynamic.get_dyn(DT_RELASZ).value();
+    auto dyn_relasz = dynamic.get_dyn(DT_RELASZ);
+    assert(dyn_relasz != nullptr);
     dyn_relasz->d_un.d_val = shdr.sh_size;
 
     auto dyn_relacount = dynamic.get_dyn(DT_RELACOUNT);
-    if (dyn_relacount.has_value()) {
-        auto relacount = dyn_relacount.value();
-        relacount->d_un.d_val = cnt;
+    if (dyn_relacount != nullptr) {
+      auto relacount = dyn_relacount;
+      relacount->d_un.d_val = cnt;
     }
 
     // SYMS

@@ -21,14 +21,14 @@ target_include_directories(libbintail PUBLIC
     ${ELF_INCLUDE_DIRS} ${MULTIVERSE_INCLUDE_DIRS})
 
 set_target_properties(libbintail PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 14
     CXX_STANDARD_REQUIRED YES
 )
 
 target_link_libraries(libbintail ${ELF_LIBRARIES})
 
 set_target_properties(tests PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 14
     CXX_STANDARD_REQUIRED YES
 )
 
@@ -44,7 +44,7 @@ add_executable(bintail-cli
 )
 
 set_target_properties(bintail-cli PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 14
     CXX_STANDARD_REQUIRED YES
 )
 
