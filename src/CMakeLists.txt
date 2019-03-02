@@ -1,12 +1,13 @@
 project(libbintail LANGUAGES CXX VERSION 0.1)
 
 set(SOURCES
-    bintail.cpp
-    elf.cc
+    include/bintail/bintail.hpp
+    bintail.cc
+    mvscn.cc
     elf.h
-    mvscn.cpp
-    mvelem.cpp
-    include/bintail/bintail.hpp)
+    elf.cc
+    mvelem.h
+    mvelem.cc)
 
 add_library(libbintail ${SOURCES})
 
@@ -40,7 +41,7 @@ target_link_libraries(tests
 install(TARGETS libbintail DESTINATION lib)
 
 add_executable(bintail-cli
-    main.cpp
+    main.cc
 )
 
 set_target_properties(bintail-cli PROPERTIES
