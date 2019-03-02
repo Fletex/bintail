@@ -18,10 +18,16 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+/* Multiverse Parsing */
 class MVVar;
 class MVFn;
 class MVPP;
 class MVData;
+
+/* bintail elf data */
+namespace bintail {
+class ElfExe;
+}  // namespace bintail
 
 const GElf_Rela make_rela(uint64_t source, uint64_t target);
 
@@ -226,19 +232,20 @@ public:
     std::vector<GElf_Rela> rela_other;
     std::vector<symbol>  syms;
 private:
-    /* Elf file */
-    int infd, outfd;
-    Elf *e_in, *e_out;
-    GElf_Ehdr ehdr_in, ehdr_out;
+ std::unique_ptr<bintail::ElfExe> exe_;
+ /* Elf file */
+ int infd, outfd;
+ Elf *e_in, *e_out;
+ GElf_Ehdr ehdr_in, ehdr_out;
 
-    Elf_Scn *reloc_scn_in;
-    Elf_Scn *reloc_scn_out;
+ Elf_Scn *reloc_scn_in;
+ Elf_Scn *reloc_scn_out;
 
-    Elf_Scn *symtab_scn;
+ Elf_Scn *symtab_scn;
 
-    uint removed_scns;
+ uint removed_scns;
 
-    std::vector<struct sec> secs;
-    std::map<Elf_Scn*, Section*> scn_handler;
+ std::vector<struct sec> secs;
+ std::map<Elf_Scn *, Section *> scn_handler;
 };
 #endif

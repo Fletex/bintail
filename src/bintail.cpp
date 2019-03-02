@@ -42,32 +42,31 @@ Bintail::~Bintail() {
 }
 
 Bintail::Bintail(const char *infile) {
-    bintail::ElfExe exe{infile};
+  exe_ = make_unique<bintail::ElfExe>(infile);
 
-    /* init libelf state */ 
-    if (elf_version(EV_CURRENT) == EV_NONE)
-        errx(1, "libelf init failed");
-    if ((infd = open(infile, O_RDONLY)) == -1) 
-        errx(1, "open %s failed. %s", infile, strerror(errno));
-    if ((e_in = elf_begin(infd, ELF_C_READ, NULL)) == nullptr)
-        errx(1, "elf_begin infile failed.");
+  /* init libelf state */
+  if (elf_version(EV_CURRENT) == EV_NONE) errx(1, "libelf init failed");
+  if ((infd = open(infile, O_RDONLY)) == -1)
+    errx(1, "open %s failed. %s", infile, strerror(errno));
+  if ((e_in = elf_begin(infd, ELF_C_READ, NULL)) == nullptr)
+    errx(1, "elf_begin infile failed.");
 
-    /* EHDR */
-    gelf_getehdr(e_in, &ehdr_in);
+  /* EHDR */
+  gelf_getehdr(e_in, &ehdr_in);
 
-    /* Read sections */
-    Elf_Scn *scn = nullptr;
-    GElf_Shdr shdr;
-    size_t shstrndx;
-    elf_getshdrstrndx(e_in, &shstrndx);
-    while((scn = elf_nextscn(e_in, scn)) != nullptr) {
-        struct sec s;
-        gelf_getshdr(scn, &shdr);
-        s.scn = scn;
-        s.shdr = shdr;
-        s.name = elf_strptr(e_in, shstrndx, shdr.sh_name);
-        secs.push_back(s);
-    }
+  /* Read sections */
+  Elf_Scn* scn = nullptr;
+  GElf_Shdr shdr;
+  size_t shstrndx;
+  elf_getshdrstrndx(e_in, &shstrndx);
+  while ((scn = elf_nextscn(e_in, scn)) != nullptr) {
+    struct sec s;
+    gelf_getshdr(scn, &shdr);
+    s.scn = scn;
+    s.shdr = shdr;
+    s.name = elf_strptr(e_in, shstrndx, shdr.sh_name);
+    secs.push_back(s);
+  }
 
     symtab_scn = get_scn(secs, ".symtab").value();
     if (symtab_scn == nullptr)

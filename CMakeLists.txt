@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(bintail VERSION 0.1)
 
-set(default_build_type "Debug")
+set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(PkgConfig REQUIRED)

@@ -53,7 +53,7 @@ target_link_libraries(bintail-cli
 
 install(TARGETS bintail-cli DESTINATION bin)
 
-include(CTest)
-include(Catch)
-catch_discover_tests(tests)
+#include(CTest)
+#include(Catch)
+#catch_discover_tests(tests)
 
